@@ -25,6 +25,8 @@ from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, KFold  
+
 
 """Importing datasets"""
 
@@ -188,6 +190,44 @@ print("\n")
 
 # Predict on the test data
 y_pred_test = svm_model.predict(pca_test_features_transformed)
+
+#number of folds for cross-validation
+num_folds = 5
+
+# Create a KFold object
+kf = KFold(n_splits=num_folds, shuffle=True, random_state=42)
+
+# Create empty lists to store the evaluation metrics for each fold
+accuracy_scores = []
+precision_scores = []
+recall_scores = []
+
+# Perform k-fold cross-validation
+for train_index, valid_index in kf.split(train_X, train_y):
+    train_fold_X, valid_fold_X = train_X.iloc[train_index], train_X.iloc[valid_index]
+    train_fold_y, valid_fold_y = train_y.iloc[train_index], train_y.iloc[valid_index]
+
+    # Rest of your code for preprocessing and modeling within each fold
+    # ...
+
+    # At the end of each fold, evaluate the model and store the metrics
+    y_pred_fold = svc_model.predict(valid_fold_X)
+    accuracy_fold = accuracy_score(valid_fold_y, y_pred_fold)
+    precision_fold = precision_score(valid_fold_y, y_pred_fold, average='weighted', zero_division=1)
+    recall_fold = recall_score(valid_fold_y, y_pred_fold, average='weighted')
+
+    accuracy_scores.append(accuracy_fold)
+    precision_scores.append(precision_fold)
+    recall_scores.append(recall_fold)
+
+# Calculate and print the average metrics over all folds
+average_accuracy = np.mean(accuracy_scores)
+average_precision = np.mean(precision_scores)
+average_recall = np.mean(recall_scores)
+
+print(f"Average Accuracy: {average_accuracy:.2f}")
+print(f"Average Precision: {average_precision:.2f}")
+print(f"Average Recall: {average_recall:.2f}")
 
 """CSV Generation"""
 
